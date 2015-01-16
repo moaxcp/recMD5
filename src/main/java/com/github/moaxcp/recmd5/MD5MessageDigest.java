@@ -80,7 +80,7 @@ import java.security.MessageDigest;
  * @author Timothy W Macinta (twm@alum.mit.edu) (optimizations and bug fixes)
  * @author John Mercier <moaxcp@gmail.com>
  */
-public class MD5MessageDigest extends MessageDigest {
+public final class MD5MessageDigest extends MessageDigest {
 
     private MD5State state;
 
@@ -110,7 +110,7 @@ public class MD5MessageDigest extends MessageDigest {
         this.state = state;
     }
 
-    protected byte[] encode(int input[], int len) {
+    private byte[] encode(int input[], int len) {
         int i, j;
         byte out[];
 
@@ -126,7 +126,7 @@ public class MD5MessageDigest extends MessageDigest {
         return out;
     }
 
-    protected void decode(byte buffer[], int shift, int[] out) {
+    private void decode(byte buffer[], int shift, int[] out) {
         /*len += shift;
         for (int i = 0; shift < len; i++, shift += 4) {
         out[i] = ((int) (buffer[shift] & 0xff)) |
@@ -203,7 +203,7 @@ public class MD5MessageDigest extends MessageDigest {
                 | (((int) buffer[shift + 63]) << 24);
     }
 
-    protected void transform(int[] state, byte buffer[], int shift, int[] decode_buf) {
+    private void transform(int[] state, byte buffer[], int shift, int[] decode_buf) {
         int a = state[0],
                 b = state[1],
                 c = state[2],
@@ -369,7 +369,7 @@ public class MD5MessageDigest extends MessageDigest {
         state[3] += d;
     }
 
-    protected void updateFinal(byte[] buffer, int offset, int length) {
+    private void updateFinal(byte[] buffer, int offset, int length) {
         int index, partlen, i, start;
         //finals = null;
 
@@ -412,7 +412,7 @@ public class MD5MessageDigest extends MessageDigest {
         }
     }
 
-    protected void updateString(byte[] hash) {
+    private void updateString(byte[] hash) {
         char buf[] = new char[hash.length * 2];
         for (int i = 0, x = 0; i < hash.length; i++) {
             buf[x++] = HEX_CHARS[(hash[i] >>> 4) & 0xf];
