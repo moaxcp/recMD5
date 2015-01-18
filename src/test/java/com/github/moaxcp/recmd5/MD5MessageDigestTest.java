@@ -23,6 +23,14 @@
  */
 package com.github.moaxcp.recmd5;
 
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.Random;
+
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -54,73 +62,52 @@ public class MD5MessageDigestTest {
     @After
     public void tearDown() {
     }
+    
+    private boolean testAgainstJavaMD5(byte[] bytes) {
+        MessageDigest expected = null;
+        MD5MessageDigest test = null;
+        try {
+            expected = MessageDigest.getInstance("md5");
+            test = new MD5MessageDigest();
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(MD5MessageDigestTest.class.getName()).log(Level.SEVERE, null, ex);
+            throw new IllegalStateException("could not create MessageDigest", ex);
+        }
 
-    /**
-     * Test of engineUpdate method, of class MD5MessageDigest.
-     */
-    @Test
-    public void testEngineUpdate_byte() {
-        System.out.println("engineUpdate");
-        byte input = 0;
-        MD5MessageDigest instance = new MD5MessageDigest();
-        instance.engineUpdate(input);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of engineUpdate method, of class MD5MessageDigest.
-     */
-    @Test
-    public void testEngineUpdate_3args() {
-        System.out.println("engineUpdate");
-        byte[] buffer = null;
-        int offset = 0;
-        int length = 0;
-        MD5MessageDigest instance = new MD5MessageDigest();
-        instance.engineUpdate(buffer, offset, length);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of engineDigest method, of class MD5MessageDigest.
-     */
-    @Test
-    public void testEngineDigest() {
-        System.out.println("engineDigest");
-        MD5MessageDigest instance = new MD5MessageDigest();
-        byte[] expResult = null;
-        byte[] result = instance.engineDigest();
-        assertArrayEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of engineReset method, of class MD5MessageDigest.
-     */
-    @Test
-    public void testEngineReset() {
-        System.out.println("engineReset");
-        MD5MessageDigest instance = new MD5MessageDigest();
-        instance.engineReset();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getState method, of class MD5MessageDigest.
-     */
-    @Test
-    public void testGetState() {
-        System.out.println("getState");
-        MD5MessageDigest instance = new MD5MessageDigest();
-        MD5State expResult = null;
-        MD5State result = instance.getState();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        expected.update(bytes);
+        String s = new BigInteger(1, expected.digest()).toString(16);
+        if (s.length() == 31) {
+            s = "0" + s;
+        }
+        test.digest(bytes);
+        Logger.getLogger(MD5MessageDigestTest.class.getName()).info(s);
+        Logger.getLogger(MD5MessageDigestTest.class.getName()).info(test.getState().toString());
+        return s.equals(test.getState().toString());
     }
     
+    private byte[] getBytes(int size) {
+        byte[] bytes = new byte[size];
+        new Random().nextBytes(bytes);
+        return bytes;
+    }
+    
+    @Test
+    public void test0() {
+        assertTrue(testAgainstJavaMD5(getBytes(0)));
+    }
+    
+    @Test
+    public void test1024() {
+        assertTrue(testAgainstJavaMD5(getBytes(1024)));
+    }
+    
+    @Test
+    public void test2048() {
+        assertTrue(testAgainstJavaMD5(getBytes(2048)));
+    }
+    
+    @Test
+    public void test1048576() {
+        assertTrue(testAgainstJavaMD5(getBytes(1048576)));
+    }
 }
