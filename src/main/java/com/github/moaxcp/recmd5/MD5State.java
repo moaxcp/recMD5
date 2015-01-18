@@ -70,30 +70,49 @@ import java.util.Arrays;
  * @author	Timothy W Macinta (twm@alum.mit.edu) (optimizations and bug fixes)
  * @author      John Mercier <moaxcp@gmail.com>
  **/
-public class MD5State implements Serializable {
+public final class MD5State implements Serializable {
 
     /**
      * 128-bit state
      */
-    protected int state[];
+    int state[];
 
-    protected int finalState[];
+    int finalState[];
 
     /**
      * 64-bit character count
      */
-    protected long count;
+    long count;
 
-    protected long finalCount;
+    long finalCount;
 
     /**
      * 64-byte buffer (512 bits) for storing to-be-hashed characters
      */
-    protected byte buffer[];
+    byte buffer[];
 
-    protected byte finalBuffer[];
+    byte finalBuffer[];
 
     private StringBuilder hash;
+
+    /**
+     * performs a deep copy of md5State
+     * 
+     * @param md5State the state to copy.
+     * @return a copy of the md5State
+     */
+    public static MD5State copy(MD5State md5State) {
+        MD5State copy = new MD5State();
+        copy.count = md5State.count;
+        copy.finalCount = md5State.finalCount;
+        copy.hash.delete(0, md5State.hash.length());
+        copy.hash.append(md5State.hash);
+        copy.buffer = md5State.buffer.clone();
+        copy.state = md5State.state.clone();
+        copy.finalBuffer = md5State.finalBuffer.clone();
+        copy.finalState = md5State.finalState.clone();
+        return copy;
+    }
 
     /**
      * creates a default MD5State
@@ -115,25 +134,6 @@ public class MD5State implements Serializable {
 
     }
 
-    public void copy(MD5State md5State) {
-        count = md5State.count;
-        finalCount = md5State.finalCount;
-        hash.delete(0, hash.length());
-        hash.append(md5State.hash);
-        for(int i = 0; i < buffer.length; i++) {
-            buffer[i] = md5State.buffer[i];
-        }
-        for(int i = 0; i < state.length; i++) {
-            state[i] = md5State.state[i];
-        }
-        for(int i = 0; i < finalBuffer.length; i++) {
-            finalBuffer[i] = md5State.finalBuffer[i];
-        }
-        for(int i = 0; i < finalState.length; i++) {
-            finalState[i] = md5State.finalState[i];
-        }
-    }
-
     /**
      * copies the state to the final variables.
      */
@@ -147,6 +147,13 @@ public class MD5State implements Serializable {
     }
 
     /**
+     * @return the StringBuilder for this hash.
+     */
+    StringBuilder getHash() {
+        return hash;
+    }
+
+    /**
      * returns the String representation of the hash. Users must use digest from
      * MD5MessageDigest for this to be accurate.
      */
@@ -156,12 +163,10 @@ public class MD5State implements Serializable {
     }
 
     /**
-     * @param hash the hash to set
+     * returns the Object hashCode for this object.
+     * 
+     * @return the hashCode.
      */
-    protected StringBuilder getHash() {
-        return hash;
-    }
-
     @Override
     public int hashCode() {
         int hash = 7;
@@ -171,6 +176,12 @@ public class MD5State implements Serializable {
         return hash;
     }
 
+    /**
+     * Compares this Object with another object.
+     * 
+     * @param the object to compare. Should be an MD5State.
+     * @return true if o is an MD5State and it is equal to this object.
+     */
     @Override
     public boolean equals(Object o) {
         if(o instanceof MD5State) {
