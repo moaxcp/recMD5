@@ -107,7 +107,15 @@ public final class MD5MessageDigest extends MessageDigest {
      */
     public MD5MessageDigest(MD5State state) {
         super("md5");
-        this.state = state;
+        this.state = MD5State.copy(state);
+    }
+
+    /**
+     * returns a copy of the state of the Digest. This uses MD5State.copy
+     * @return copy of state
+     */
+    public MD5State getState() {
+        return MD5State.copy(state);
     }
 
     private byte[] encode(int input[], int len) {
@@ -497,13 +505,5 @@ public final class MD5MessageDigest extends MessageDigest {
     @Override
     protected void engineReset() {
         state = new MD5State();
-    }
-
-    /**
-     * returns the state of the Digest for use in the future.
-     * @return the state
-     */
-    public MD5State getState() {
-        return state;
     }
 }
