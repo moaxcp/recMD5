@@ -66,9 +66,9 @@ import java.util.Arrays;
  * "It is my hope that this library will be useful to programmers calculating
  * md5s for input from ranged protocols such as http and ftp." - John Mercier
  *
- * @author	Santeri Paavolainen <sjpaavol@cc.helsinki.fi>
+ * @author	Santeri Paavolainen &lt;sjpaavol@cc.helsinki.fi&gt;
  * @author	Timothy W Macinta (twm@alum.mit.edu) (optimizations and bug fixes)
- * @author      John Mercier <moaxcp@gmail.com>
+ * @author      John Mercier &lt;moaxcp@gmail.com&gt;
  **/
 public final class MD5State implements Serializable {
 
@@ -179,7 +179,7 @@ public final class MD5State implements Serializable {
     /**
      * Compares this Object with another object.
      * 
-     * @param the object to compare. Should be an MD5State.
+     * @param o the object to compare. Should be an MD5State.
      * @return true if o is an MD5State and it is equal to this object.
      */
     @Override
