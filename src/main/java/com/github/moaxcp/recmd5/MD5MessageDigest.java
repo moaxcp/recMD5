@@ -70,15 +70,15 @@ import java.security.MessageDigest;
  * digest is called first.
  * <p>
  * Future developers are welcome to submit ideas, errors, or requests to
- * <moaxcp@gmail.com>
+ * &lt;moaxcp@gmail.com&gt;
  * <p>
  * "It is my hope that this library will be useful to programmers calculating
  * md5s for input from ranged/recoverable protocols such as http and ftp."
  * - John Mercier
  *
- * @author Santeri Paavolainen <sjpaavol@cc.helsinki.fi>
+ * @author Santeri Paavolainen &lt;sjpaavol@cc.helsinki.fi&gt;
  * @author Timothy W Macinta (twm@alum.mit.edu) (optimizations and bug fixes)
- * @author John Mercier <moaxcp@gmail.com>
+ * @author John Mercier &lt;moaxcp@gmail.com&gt;
  */
 public final class MD5MessageDigest extends MessageDigest {
 
