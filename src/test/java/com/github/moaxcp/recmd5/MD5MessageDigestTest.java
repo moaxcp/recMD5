@@ -26,13 +26,18 @@ package com.github.moaxcp.recmd5;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Random;
 
-
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -43,27 +48,101 @@ import static org.junit.Assert.*;
  * @author john
  */
 public class MD5MessageDigestTest {
-    
+
+    private static final int TESTS = 25;
+    private int[] sizes = {0, 1024, 1024 * 2, 1024 * 1024, 1024 * 1024 * 2, 1024 * 1024 * 10, 1024 * 1024 * 50};
+
+    public class TestResult {
+
+        long expectedTime;
+        long testTime;
+        byte[] expectedBytes;
+        byte[] testBytes;
+
+        public TestResult(long expectedTime, long testTime, byte[] expectedBytes, byte[] testBytes) {
+            this.expectedTime = expectedTime;
+            this.testTime = testTime;
+            this.expectedBytes = expectedBytes;
+            this.testBytes = testBytes;
+        }
+    }
+
+    public class TestAverages {
+
+        long averageExpectedTime;
+        long averageTestTime;
+
+        public TestAverages(List<TestResult> tests) {
+            for (TestResult r : tests) {
+                averageExpectedTime += r.expectedTime;
+                averageTestTime += r.testTime;
+            }
+            averageExpectedTime /= tests.size();
+            averageTestTime /= tests.size();
+        }
+    }
+
     public MD5MessageDigestTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
     public void setUp() {
     }
-    
+
     @After
     public void tearDown() {
     }
-    
-    private boolean testAgainstJavaMD5(byte[] bytes) {
+
+    private long timeUpdate(MessageDigest md, byte[] bytes) {
+        return timeUpdate(md, bytes, 0, bytes.length);
+    }
+
+    private long timeUpdate(MessageDigest md, byte[] bytes, int offset, int length) {
+        long start = System.nanoTime();
+        md.update(bytes, offset, length);
+        return System.nanoTime() - start;
+    }
+
+    private long timeDigest(MessageDigest md) {
+        long start = System.nanoTime();
+        md.digest();
+        return System.nanoTime() - start;
+    }
+
+    private long timeDigest(MessageDigest md, byte[] bytes) {
+        return timeDigest(md, bytes, 0, bytes.length);
+    }
+
+    private long timeDigest(MessageDigest md, byte[] bytes, int offset, int length) {
+        long start = System.nanoTime();
+        md.digest(bytes);
+        return System.nanoTime() - start;
+    }
+
+    private String toTimeString(long time) {
+        return new SimpleDateFormat("mm:ss:SSS").format(new Date(time / 1000000)).concat(" ").concat(Long.toString(time % 1000000));
+    }
+
+    public static String toSizeString(long bytes) {
+        boolean si = false;
+        int unit = si ? 1000 : 1024;
+        if (bytes < unit) {
+            return bytes + " B";
+        }
+        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
+        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+    }
+
+    private TestResult testAgainstJava(byte[] bytes) {
         MessageDigest expected = null;
         MD5MessageDigest test = null;
         try {
@@ -74,40 +153,117 @@ public class MD5MessageDigestTest {
             throw new IllegalStateException("could not create MessageDigest", ex);
         }
 
-        expected.update(bytes);
-        String s = new BigInteger(1, expected.digest()).toString(16);
+        long expectedStart = System.nanoTime();
+        byte[] expectedBytes = expected.digest(bytes);
+        long expectedTime = System.nanoTime() - expectedStart;
+        long testStart = System.nanoTime();
+        byte[] testBytes = test.digest(bytes);
+        long testTime = System.nanoTime() - testStart;
+
+        String s = new BigInteger(1, expectedBytes).toString(16);
         if (s.length() == 31) {
             s = "0" + s;
         }
-        test.digest(bytes);
-        Logger.getLogger(MD5MessageDigestTest.class.getName()).info(s);
-        Logger.getLogger(MD5MessageDigestTest.class.getName()).info(test.getState().toString());
-        return s.equals(test.getState().toString());
+
+        return new TestResult(expectedTime, testTime, expectedBytes, testBytes);
     }
-    
+
+    private TestResult testAgainstJavaWithSwap(byte[] bytes) {
+        MessageDigest expected = null;
+        MD5MessageDigest test = null;
+        try {
+            expected = MessageDigest.getInstance("md5");
+            test = new MD5MessageDigest();
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(MD5MessageDigestTest.class.getName()).log(Level.SEVERE, null, ex);
+            throw new IllegalStateException("could not create MessageDigest", ex);
+        }
+
+        long testTime = 0;
+        long expectedTime = 0;
+
+        if (bytes.length >= 2) {
+            expectedTime += timeUpdate(expected, bytes, 0, bytes.length / 2);
+            testTime += timeUpdate(test, bytes, 0, bytes.length / 2);
+
+            test = new MD5MessageDigest(test.getState());
+
+            expectedTime += timeUpdate(expected, bytes, bytes.length / 2, bytes.length / 2);
+            testTime += timeUpdate(test, bytes, bytes.length / 2, bytes.length / 2);
+        } else {
+            expectedTime += timeUpdate(expected, bytes);
+            testTime += timeUpdate(test, bytes);
+        }
+
+        long expectedStart = System.nanoTime();
+        byte[] expectedBytes = expected.digest(bytes);
+        expectedTime += System.nanoTime() - expectedStart;
+
+        long testStart = System.nanoTime();
+        byte[] testBytes = test.digest(bytes);
+        testTime += System.nanoTime() - testStart;
+
+        String s = new BigInteger(1, expectedBytes).toString(16);
+        if (s.length() == 31) {
+            s = "0" + s;
+        }
+
+        return new TestResult(expectedTime, testTime, expectedBytes, testBytes);
+    }
+
     private byte[] getBytes(int size) {
         byte[] bytes = new byte[size];
         new Random().nextBytes(bytes);
         return bytes;
     }
-    
-    @Test
-    public void test0() {
-        assertTrue(testAgainstJavaMD5(getBytes(0)));
+
+    private List<TestResult> testAgainstJava(int length, int tests) {
+        List<TestResult> list = new ArrayList<>();
+        byte[] bytes = getBytes(length);
+        for (int i = 0; i < tests; i++) {
+            TestResult r = testAgainstJava(bytes);
+            list.add(r);
+        }
+        return list;
     }
-    
-    @Test
-    public void test1024() {
-        assertTrue(testAgainstJavaMD5(getBytes(1024)));
+
+    private List<TestResult> testAgainstJavaWithSwap(int length, int tests) {
+        List<TestResult> list = new ArrayList<>();
+        byte[] bytes = getBytes(length);
+        for (int i = 0; i < tests; i++) {
+            TestResult r = testAgainstJavaWithSwap(bytes);
+            list.add(r);
+        }
+        return list;
     }
-    
-    @Test
-    public void test2048() {
-        assertTrue(testAgainstJavaMD5(getBytes(2048)));
+
+    private String toResultString(TestAverages t) {
+        return toTimeString(t.averageExpectedTime) + ", " + toTimeString(t.averageTestTime) + " " + (t.averageExpectedTime < t.averageTestTime ? "Java wins" : "recmd5 wins") + " " + String.format("%1$.3f", (t.averageExpectedTime / (double) t.averageTestTime) * 100);
     }
-    
+
     @Test
-    public void test1048576() {
-        assertTrue(testAgainstJavaMD5(getBytes(1048576)));
+    public void testAgainstJava() {
+        for (int i : sizes) {
+            List<TestResult> list = testAgainstJava(i, TESTS);
+
+            for (TestResult r : list) {
+                assertArrayEquals(r.expectedBytes, r.testBytes);
+            }
+
+            System.out.println("testAgainstJava " + toSizeString(i) + " " + toResultString(new TestAverages(list)));
+        }
+    }
+
+    @Test
+    public void testAgainstJavaWithSwap() {
+        for (int i : sizes) {
+            List<TestResult> list = testAgainstJavaWithSwap(i, TESTS);
+
+            for (TestResult r : list) {
+                assertArrayEquals(r.expectedBytes, r.testBytes);
+            }
+
+            System.out.println("testAgainstJavaWithSwap " + toSizeString(i) + " " + toResultString(new TestAverages(list)));
+        }
     }
 }
