@@ -20,7 +20,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.moaxcp</groupId>
     <artifactId>recMD5</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
     <scm>
         <connection>scm:git:https://github.com/moaxcp/recMD5.git</connection>
