@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/moaxcp/recMD5.svg?branch=development)](https://travis-ci.org/moaxcp/recMD5)
+
 recMD5
 ======
 
