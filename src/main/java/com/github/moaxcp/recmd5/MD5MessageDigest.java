@@ -499,6 +499,7 @@ public final class MD5MessageDigest extends MessageDigest {
 
         byte[] hash = encode(state.finalState, 16);
         updateString(hash);
+        engineReset();
         return hash;
     }
 
