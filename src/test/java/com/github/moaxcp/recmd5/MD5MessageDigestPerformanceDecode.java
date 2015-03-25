@@ -29,9 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import org.junit.Test;
-import org.perf4j.LoggingStopWatch;
-import org.perf4j.StopWatch;
-import org.perf4j.aop.Profiled;
 
 /**
  * recoverable md5
