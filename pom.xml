@@ -82,6 +82,22 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>native-maven-plugin</artifactId>
+                <version>1.0-alpha-8</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <compilerProvider>generic-classic</compilerProvider>
+                    <compilerExecutable>CC</compilerExecutable>
+                    <source>
+                        <directory>src/main/native</directory>
+                        <fileNames>
+                            <fileName>md5.c</fileName>
+                        </fileNames>
+                    </source>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <distributionManagement>
