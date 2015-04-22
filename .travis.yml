@@ -1,1 +1,16 @@
 language: java
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "YwC8nq/XiD4AmNxBPX8/Qq5wJ648vUsL7GE9+Mzjml8Htqh1HBLY2EEIwSXAU8scb7nymQpEX9YtsvIPPLFZZWCZgfIFzxErYuAVrWvjVMbNS370uzoNFJauVFkq8vawMl8v/RSS0h3QqGqqA/xeBW8p4K9cw8RSQ882MeKWGhU="
+
+addons:
+  coverity_scan:
+    project:
+      name: "moaxcp/recMD5"
+      description: "Build submitted via Travis CI"
+    notification_email: moaxcp@gmail.com
+    build_command_prepend: "mvn clean"
+    build_command:   "mvn -DskipTests=true compile"
+    branch_pattern: development
